@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIDAL — Phantom Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#050505;
+  --void2:#0a0a0a;
+  --void3:#111;
+  --void4:#181818;
+  --crimson:#8B0000;
+  --crimson2:#A00000;
+  --crimson3:#C00000;
+  --gold:#C9A84C;
+  --gold2:#E8C86A;
+  --silver:rgba(255,255,255,0.55);
+  --silver2:rgba(255,255,255,0.28);
+  --silver3:rgba(255,255,255,0.1);
+  --white:#F0EBE0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Jost',sans-serif;
+  background:var(--void);
+  color:var(--white);
+  overflow-x:hidden;
+  cursor:none;
+}
+
+/* CURSOR — elegant circle */
+#ec{
+  width:48px;height:48px;
+  border:1px solid rgba(201,168,76,0.5);
+  border-radius:50%;
+  position:fixed;top:0;left:0;
+  pointer-events:none;z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:transform 0.1s ease,border-color 0.3s,width 0.3s,height 0.3s;
+  mix-blend-mode:normal;
+}
+#ec-d{
+  width:4px;height:4px;
+  background:var(--gold);
+  border-radius:50%;
+  position:fixed;top:0;left:0;
+  pointer-events:none;z-index:10000;
+  transform:translate(-50%,-50%);
+}
+
+/* CONSTELLATION CANVAS */
+#cc{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  padding:28px 64px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:all 0.6s ease;
+}
+nav.scrolled{
+  background:rgba(5,5,5,0.92);
+  padding:18px 64px;
+  backdrop-filter:blur(30px);
+  border-bottom:1px solid rgba(201,168,76,0.12);
+}
+.n-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.9rem;font-weight:600;
+  letter-spacing:0.18em;
+  color:var(--white);
+  text-decoration:none;
+  display:flex;align-items:baseline;gap:0;
+}
+.n-logo .ri{color:var(--crimson3);font-style:italic;}
+.n-logo .go{color:var(--gold);font-size:0.6rem;font-family:'Jost',sans-serif;font-weight:400;letter-spacing:0.3em;text-transform:uppercase;align-self:center;margin-left:14px;padding-left:14px;border-left:1px solid rgba(201,168,76,0.3);line-height:1.5;}
+.n-links{display:flex;gap:0;list-style:none;}
+.n-links a{
+  font-family:'Jost',sans-serif;
+  font-size:0.68rem;font-weight:400;
+  letter-spacing:0.25em;text-transform:uppercase;
+  color:var(--silver2);
+  text-decoration:none;
+  padding:6px 22px;
+  position:relative;
+  transition:color 0.4s;
+}
+.n-links a::before{
+  content:'';position:absolute;
+  bottom:0;left:22px;right:22px;
+  height:1px;background:var(--gold);
+  transform:scaleX(0);
+  transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.n-links a:hover{color:var(--white);}
+.n-links a:hover::before{transform:scaleX(1);}
+.n-cta{
+  font-family:'Jost',sans-serif;
+  font-size:0.65rem;font-weight:500;
+  letter-spacing:0.28em;text-transform:uppercase;
+  color:var(--gold);
+  text-decoration:none;
+  padding:10px 28px;
+  border:1px solid rgba(201,168,76,0.4);
+  position:relative;overflow:hidden;
+  transition:all 0.4s;
+}
+.n-cta::before{
+  content:'';position:absolute;inset:0;
+  background:rgba(201,168,76,0.08);
+  transform:translateX(-100%);
+  transition:transform 0.4s ease;
+}
+.n-cta:hover{border-color:var(--gold);color:var(--white);}
+.n-cta:hover::before{transform:translateX(0);}
+
+/* HERO */
+#hero{
+  height:100vh;
+  position:relative;
+  display:flex;align-items:center;
+  overflow:hidden;
+}
+
+/* Concentric rings background */
+.rings{
+  position:absolute;
+  top:50%;right:-10%;
+  transform:translateY(-50%);
+  width:80vw;height:80vw;
+  pointer-events:none;z-index:1;
+}
+.ring{
+  position:absolute;inset:0;
+  border-radius:50%;
+  border:1px solid rgba(139,0,0,0.12);
+  transform:scale(0.2);
+  opacity:0;
+  animation:ringExpand 2s cubic-bezier(0.4,0,0.2,1) forwards;
+}
+.ring:nth-child(1){animation-delay:0.3s;}
+.ring:nth-child(2){transform:scale(0.4);animation-delay:0.5s;}
+.ring:nth-child(3){transform:scale(0.6);animation-delay:0.7s;}
+.ring:nth-child(4){transform:scale(0.8);animation-delay:0.9s;}
+.ring:nth-child(5){transform:scale(1.0);animation-delay:1.1s;}
+@keyframes ringExpand{to{transform:scale(1);opacity:1;}}
+
+/* Red line that draws across */
+.draw-line{
+  position:absolute;
+  top:50%;left:0;
+  width:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--crimson),transparent);
+  animation:drawLine 2s ease 0.5s forwards;
+  z-index:2;
+}
+@keyframes drawLine{to{width:100%;}}
+
+/* Vertical text sides */
+.side-text{
+  position:absolute;
+  writing-mode:vertical-lr;
+  font-family:'Jost',sans-serif;
+  font-size:0.58rem;font-weight:400;
+  letter-spacing:0.3em;text-transform:uppercase;
+  color:rgba(255,255,255,0.18);
+  z-index:3;
+  opacity:0;
+  animation:fadeIn 1s ease 1.5s forwards;
+}
+.side-text.left{left:28px;top:50%;transform:translateY(-50%) rotate(180deg);}
+.side-text.right{right:28px;top:50%;transform:translateY(-50%);}
+
+.hero-content{
+  position:relative;z-index:4;
+  padding:0 80px;
+  max-width:1100px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:80px;
+  align-items:center;
+  width:100%;
+}
+.hero-left{}
+
+.hero-kicker{
+  font-family:'Jost',sans-serif;
+  font-size:0.62rem;font-weight:400;
+  letter-spacing:0.5em;text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:32px;
+  display:flex;align-items:center;gap:16px;
+  opacity:0;transform:translateY(12px);
+  animation:fadeUp 0.7s ease 0.6s forwards;
+}
+.hero-kicker::before,.hero-kicker::after{content:'';flex:1;max-width:40px;height:1px;background:linear-gradient(90deg,var(--gold),transparent);}
+.hero-kicker::after{background:linear-gradient(-90deg,var(--gold),transparent);}
+
+.hero-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(4.5rem,9vw,11rem);
+  font-weight:300;
+  line-height:0.9;
+  letter-spacing:-0.01em;
+  margin-bottom:10px;
+}
+.hero-title .row{display:block;overflow:hidden;}
+.hero-title .row span{
+  display:block;
+  transform:translateY(110%);
+  opacity:0;
+}
+.hero-title .row:nth-child(1) span{animation:slideUp 1s cubic-bezier(0.16,1,0.3,1) 0.7s forwards;}
+.hero-title .row:nth-child(2) span{animation:slideUp 1s cubic-bezier(0.16,1,0.3,1) 0.85s forwards;font-style:italic;color:var(--silver2);}
+.hero-title .row:nth-child(3) span{animation:slideUp 1s cubic-bezier(0.16,1,0.3,1) 1s forwards;color:var(--crimson3);}
+@keyframes slideUp{to{transform:translateY(0);opacity:1;}}
+
+.hero-serif-sub{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.15rem;font-style:italic;font-weight:300;
+  color:var(--silver2);
+  line-height:1.8;
+  max-width:420px;
+  margin-top:36px;
+  opacity:0;transform:translateY(12px);
+  animation:fadeUp 0.8s ease 1.2s forwards;
+}
+.hero-actions{
+  display:flex;gap:20px;align-items:center;
+  margin-top:48px;
+  opacity:0;transform:translateY(12px);
+  animation:fadeUp 0.8s ease 1.35s forwards;
+}
+.btn-phantom{
+  font-family:'Jost',sans-serif;
+  font-size:0.65rem;font-weight:500;
+  letter-spacing:0.3em;text-transform:uppercase;
+  color:var(--void);background:var(--gold);
+  padding:14px 38px;text-decoration:none;
+  position:relative;overflow:hidden;
+  transition:all 0.4s;
+}
+.btn-phantom::before{
+  content:'';position:absolute;inset:0;
+  background:var(--crimson3);
+  transform:translateX(-100%);
+  transition:transform 0.4s ease;
+}
+.btn-phantom:hover::before{transform:translateX(0);}
+.btn-phantom:hover{color:var(--white);}
+.btn-phantom span{position:relative;z-index:1;}
+
+.btn-outline{
+  font-family:'Jost',sans-serif;
+  font-size:0.65rem;font-weight:400;
+  letter-spacing:0.3em;text-transform:uppercase;
+  color:var(--silver2);
+  text-decoration:none;
+  display:flex;align-items:center;gap:12px;
+  transition:color 0.3s;
+}
+.btn-outline:hover{color:var(--white);}
+.btn-outline .ll{width:32px;height:1px;background:currentColor;position:relative;transition:width 0.3s;}
+.btn-outline:hover .ll{width:50px;}
+.btn-outline .ll::after{content:'';position:absolute;right:0;top:-3px;width:6px;height:6px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:rotate(45deg);}
+
+.hero-right{
+  display:flex;flex-direction:column;gap:0;
+  border:1px solid rgba(201,168,76,0.12);
+  opacity:0;
+  animation:fadeIn 0.8s ease 1.5s forwards;
+  min-width:160px;
+}
+.hstat-ph{
+  padding:24px 28px;
+  border-bottom:1px solid rgba(201,168,76,0.1);
+  text-align:center;
+  transition:background 0.4s;
+  cursor:default;
+}
+.hstat-ph:last-child{border-bottom:none;}
+.hstat-ph:hover{background:rgba(201,168,76,0.04);}
+.hstat-n{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.8rem;font-weight:300;
+  color:var(--crimson3);line-height:1;
+  display:block;
+}
+.hstat-l{
+  font-family:'Jost',sans-serif;
+  font-size:0.55rem;font-weight:400;
+  letter-spacing:0.22em;text-transform:uppercase;
+  color:rgba(255,255,255,0.25);margin-top:4px;
+}
+
+/* SECTION COMMON */
+section{position:relative;z-index:2;}
+.sec-pad{padding:140px 80px;}
+.s-label{
+  font-family:'Jost',sans-serif;
+  font-size:0.58rem;font-weight:400;
+  letter-spacing:0.4em;text-transform:uppercase;
+  color:var(--gold);
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:20px;
+}
+.s-label::before{content:'';width:28px;height:1px;background:var(--gold);}
+.s-h{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3rem,5.5vw,7rem);
+  font-weight:300;letter-spacing:-0.01em;line-height:0.95;
+}
+.s-h em{font-style:italic;color:var(--silver2);}
+.s-h strong{font-weight:500;color:var(--crimson3);}
+
+/* BAND — full-width gold line separator */
+.band{
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,168,76,0.3),transparent);
+  position:relative;z-index:2;
+}
+
+/* ABOUT */
+#about{background:var(--void2);}
+.about-wrap{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:100px;align-items:start;
+}
+.about-num-bg{
+  font-family:'Cormorant Garamond',serif;
+  font-size:22rem;font-weight:300;
+  line-height:1;color:rgba(255,255,255,0.02);
+  position:absolute;top:-60px;left:-20px;
+  pointer-events:none;
+}
+.about-left{position:relative;}
+.about-right{}
+.about-p{
+  font-size:0.95rem;line-height:2;
+  color:rgba(255,255,255,0.38);font-weight:300;
+  margin-bottom:24px;
+}
+.about-panel{
+  background:var(--void3);
+  border:1px solid rgba(255,255,255,0.06);
+  position:relative;
+}
+.about-panel::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--crimson),var(--gold),transparent);
+}
+.feat-ph{
+  display:flex;align-items:flex-start;gap:22px;
+  padding:28px 32px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  transition:background 0.4s;cursor:default;
+}
+.feat-ph:last-child{border-bottom:none;}
+.feat-ph:hover{background:rgba(201,168,76,0.03);}
+.fph-ico{
+  width:36px;height:36px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(201,168,76,0.2);
+  background:rgba(201,168,76,0.04);
+}
+.fph-ico svg{display:block;}
+.fph-t{
+  font-family:'Jost',sans-serif;
+  font-size:0.82rem;font-weight:500;
+  letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--white);margin-bottom:5px;
+}
+.fph-p{
+  font-size:0.78rem;line-height:1.7;
+  color:rgba(255,255,255,0.3);font-weight:300;
+}
+
+/* MARQUEE */
+.mq{
+  border-top:1px solid rgba(255,255,255,0.05);
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  padding:14px 0;overflow:hidden;
+  background:rgba(201,168,76,0.02);
+  position:relative;z-index:2;
+}
+.mq-track{
+  display:flex;gap:60px;
+  animation:mqAnim 35s linear infinite;
+  white-space:nowrap;
+}
+.mq-track:hover{animation-play-state:paused;}
+.mq-item{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.05rem;font-style:italic;font-weight:300;
+  letter-spacing:0.1em;
+  color:rgba(255,255,255,0.18);
+  display:flex;align-items:center;gap:32px;flex-shrink:0;
+  transition:color 0.3s;
+}
+.mq-item:hover{color:var(--gold);}
+.mq-gem{
+  width:4px;height:4px;
+  background:var(--gold);
+  transform:rotate(45deg);
+  opacity:0.5;flex-shrink:0;
+}
+@keyframes mqAnim{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* PRODUCTS */
+#products{background:var(--void);}
+.prod-head{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  margin-bottom:70px;
+}
+.prod-sub{
+  font-size:0.85rem;color:var(--silver2);
+  max-width:300px;text-align:right;
+  line-height:1.8;font-weight:300;
+  font-style:italic;
+  font-family:'Cormorant Garamond',serif;
+  font-size:1rem;
+}
+.prod-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  border:1px solid rgba(255,255,255,0.05);
+  gap:1px;
+  background:rgba(255,255,255,0.04);
+}
+.pc{
+  background:var(--void);
+  padding:44px 36px;
+  position:relative;overflow:hidden;
+  transition:background 0.5s;
+  cursor:pointer;
+}
+.pc:hover{background:var(--void2);}
+.pc::before{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse at top left,rgba(139,0,0,0.08),transparent 60%);
+  opacity:0;transition:opacity 0.5s;
+}
+.pc:hover::before{opacity:1;}
+.pc-glow{
+  position:absolute;
+  top:-30%;left:-20%;
+  width:200%;height:200%;
+  background:radial-gradient(ellipse,rgba(201,168,76,0.03) 0%,transparent 60%);
+  opacity:0;
+  transition:opacity 0.5s;
+  pointer-events:none;
+}
+.pc:hover .pc-glow{opacity:1;}
+.pc-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:5rem;font-weight:300;
+  color:rgba(255,255,255,0.025);
+  position:absolute;top:10px;right:18px;
+  line-height:1;
+  transition:color 0.5s;
+}
+.pc:hover .pc-num{color:rgba(201,168,76,0.04);}
+.pc-ico{
+  width:40px;height:40px;
+  border:1px solid rgba(201,168,76,0.18);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:22px;
+  position:relative;z-index:1;
+  transition:all 0.5s;
+}
+.pc-ico svg{display:block;}
+.pc:hover .pc-ico{
+  border-color:rgba(201,168,76,0.5);
+  background:rgba(201,168,76,0.05);
+  box-shadow:0 0 16px rgba(201,168,76,0.1);
+}
+.pc-cat{
+  font-family:'Jost',sans-serif;
+  font-size:0.58rem;font-weight:400;
+  letter-spacing:0.3em;text-transform:uppercase;
+  color:var(--gold);opacity:0.6;
+  margin-bottom:8px;position:relative;z-index:1;
+}
+.pc:hover .pc-cat{opacity:1;}
+.pc-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.8rem;font-weight:400;
+  letter-spacing:0.02em;line-height:1;
+  color:var(--white);margin-bottom:14px;
+  position:relative;z-index:1;
+}
+.pc-desc{
+  font-size:0.8rem;line-height:1.75;
+  color:rgba(255,255,255,0.3);font-weight:300;
+  position:relative;z-index:1;
+}
+.pc-tags{margin-top:20px;display:flex;flex-wrap:wrap;gap:6px;position:relative;z-index:1;}
+.pc-tag{
+  font-family:'Jost',sans-serif;
+  font-size:0.55rem;font-weight:400;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:rgba(255,255,255,0.2);
+  padding:3px 9px;
+  border:1px solid rgba(255,255,255,0.06);
+  transition:all 0.4s;
+}
+.pc:hover .pc-tag{border-color:rgba(201,168,76,0.2);color:rgba(255,255,255,0.45);}
+.pc-line{
+  position:absolute;bottom:0;left:0;
+  width:0;height:1px;
+  background:linear-gradient(90deg,var(--crimson),var(--gold));
+  transition:width 0.6s ease;
+}
+.pc:hover .pc-line{width:100%;}
+
+/* WHY */
+#why{background:var(--void2);}
+.why-layout{
+  display:grid;grid-template-columns:1fr 1.8fr;
+  gap:100px;align-items:start;
+  margin-top:60px;
+}
+.why-lh{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.5rem,4.5vw,5.5rem);
+  font-weight:300;line-height:1;
+}
+.why-lh em{font-style:italic;color:var(--crimson3);}
+.why-lp{
+  font-size:0.9rem;line-height:1.9;
+  color:rgba(255,255,255,0.32);font-weight:300;
+  margin-top:24px;
+}
+.why-right{
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.04);
+}
+.wc{
+  background:var(--void2);
+  padding:32px 28px;
+  position:relative;overflow:hidden;
+  transition:background 0.4s;cursor:default;
+}
+.wc:hover{background:var(--void3);}
+.wc-gold-line{
+  position:absolute;top:0;left:0;
+  height:1px;width:0;
+  background:linear-gradient(90deg,var(--gold),transparent);
+  transition:width 0.5s ease;
+}
+.wc:hover .wc-gold-line{width:100%;}
+.wc-ico{
+  width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:14px;
+  border:1px solid rgba(201,168,76,0.15);
+  transition:border-color 0.4s;
+}
+.wc-ico svg{display:block;}
+.wc:hover .wc-ico{border-color:rgba(201,168,76,0.4);}
+.wc-t{
+  font-family:'Jost',sans-serif;
+  font-size:0.78rem;font-weight:500;
+  letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--white);margin-bottom:8px;
+}
+.wc-p{
+  font-size:0.77rem;line-height:1.75;
+  color:rgba(255,255,255,0.28);font-weight:300;
+}
+
+/* LOCATIONS */
+#locations{background:var(--void3);}
+.loc-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:2px;margin-top:60px;
+  background:rgba(201,168,76,0.06);
+}
+.lc{
+  background:var(--void3);
+  padding:60px 56px;
+  position:relative;overflow:hidden;
+  transition:background 0.4s;
+}
+.lc:hover{background:var(--void4);}
+.lc::before{
+  content:'';position:absolute;
+  top:0;right:0;
+  width:80px;height:80px;
+  background:radial-gradient(circle at top right,rgba(201,168,76,0.08),transparent 70%);
+  transition:width 0.5s,height 0.5s;
+}
+.lc:hover::before{width:150px;height:150px;}
+.lc-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:0.78rem;font-weight:300;
+  letter-spacing:0.3em;
+  color:var(--gold);opacity:0.6;
+  margin-bottom:28px;
+}
+.lc-city{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3.5rem,5vw,5.5rem);
+  font-weight:300;letter-spacing:0.04em;line-height:0.95;
+  color:var(--white);margin-bottom:6px;
+}
+.lc-region{
+  font-family:'Jost',sans-serif;
+  font-size:0.6rem;font-weight:400;
+  letter-spacing:0.3em;text-transform:uppercase;
+  color:var(--crimson3);opacity:0.8;
+  margin-bottom:28px;
+}
+.lc-sep{
+  width:32px;height:1px;
+  background:linear-gradient(90deg,var(--gold),transparent);
+  margin-bottom:24px;
+}
+.lc-addr{
+  font-size:0.86rem;line-height:1.75;
+  color:rgba(255,255,255,0.32);font-weight:300;
+  margin-bottom:22px;
+}
+.lc-phones{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.lc-phones li{
+  font-family:'Jost',sans-serif;
+  font-size:0.9rem;font-weight:300;
+  color:rgba(255,255,255,0.5);
+  display:flex;align-items:center;gap:12px;
+  letter-spacing:0.05em;
+}
+.lc-phones li::before{
+  content:'';width:14px;height:1px;
+  background:linear-gradient(90deg,var(--crimson3),transparent);
+}
+
+/* CONTACT */
+#contact{background:var(--void);}
+.contact-grid{
+  display:grid;grid-template-columns:1fr 1.2fr;
+  gap:100px;align-items:start;
+}
+.ctitle{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3rem,5vw,6.5rem);
+  font-weight:300;line-height:0.92;
+  letter-spacing:-0.01em;
+  margin-bottom:24px;
+}
+.ctitle em{font-style:italic;color:var(--crimson3);}
+.csub{
+  font-size:0.88rem;line-height:1.9;
+  color:rgba(255,255,255,0.3);font-weight:300;
+  max-width:360px;margin-bottom:40px;
+}
+.cemail{
+  display:inline-flex;align-items:center;gap:14px;
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.05rem;font-style:italic;font-weight:300;
+  color:var(--gold);text-decoration:none;
+  transition:gap 0.3s,color 0.3s;
+}
+.cemail:hover{gap:22px;color:var(--gold2);}
+.cemail .ael{width:32px;height:1px;background:var(--gold);position:relative;transition:width 0.3s;}
+.cemail:hover .ael{width:50px;}
+.cemail .ael::after{content:'';position:absolute;right:0;top:-3px;width:6px;height:6px;border-top:1px solid var(--gold);border-right:1px solid var(--gold);transform:rotate(45deg);}
+
+.cform{display:flex;flex-direction:column;gap:16px;}
+.fg{display:flex;flex-direction:column;gap:7px;}
+.fg label{
+  font-family:'Jost',sans-serif;
+  font-size:0.58rem;font-weight:400;
+  letter-spacing:0.28em;text-transform:uppercase;
+  color:rgba(255,255,255,0.2);
+}
+.fg input,.fg textarea,.fg select{
+  background:rgba(255,255,255,0.03);
+  border:none;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  padding:13px 0;
+  color:var(--white);
+  font-family:'Jost',sans-serif;font-size:0.88rem;font-weight:300;
+  outline:none;resize:none;
+  -webkit-appearance:none;
+  transition:border-color 0.4s;
+}
+.fg input:focus,.fg textarea:focus,.fg select:focus{
+  border-bottom-color:var(--gold);
+}
+.fg select option{background:var(--void);}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.fsub{
+  font-family:'Jost',sans-serif;
+  font-size:0.65rem;font-weight:500;
+  letter-spacing:0.28em;text-transform:uppercase;
+  color:var(--void);background:var(--gold);
+  border:none;padding:15px 42px;
+  cursor:pointer;align-self:flex-start;
+  position:relative;overflow:hidden;
+  margin-top:8px;
+  transition:all 0.4s;
+}
+.fsub::before{content:'';position:absolute;inset:0;background:var(--crimson3);transform:translateX(-100%);transition:transform 0.4s ease;}
+.fsub:hover::before{transform:translateX(0);}
+.fsub:hover{color:var(--white);}
+.fsub span{position:relative;z-index:1;}
+
+/* FOOTER */
+footer{
+  background:var(--void2);
+  border-top:1px solid rgba(201,168,76,0.12);
+  padding:64px 80px;
+  position:relative;z-index:2;
+}
+.footer-grid{
+  display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;
+  gap:56px;margin-bottom:48px;
+}
+.flogo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.5rem;font-weight:300;
+  letter-spacing:0.15em;color:var(--white);
+  margin-bottom:14px;
+}
+.flogo em{font-style:italic;color:var(--crimson3);}
+.ftagline{font-size:0.82rem;color:rgba(255,255,255,0.22);font-weight:300;line-height:1.8;max-width:250px;}
+.fct{font-family:'Jost',sans-serif;font-size:0.58rem;font-weight:400;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);opacity:0.7;margin-bottom:18px;}
+.flinks{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.flinks a{font-size:0.82rem;color:rgba(255,255,255,0.22);text-decoration:none;font-weight:300;transition:color 0.3s;display:inline-block;}
+.flinks a:hover{color:var(--gold);}
+.fci{display:flex;align-items:flex-start;gap:10px;font-size:0.8rem;color:rgba(255,255,255,0.22);font-weight:300;margin-bottom:10px;line-height:1.55;}
+.fci svg{flex-shrink:0;margin-top:2px;}
+.fbtm{display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid rgba(255,255,255,0.04);}
+.fcopy{font-size:0.72rem;color:rgba(255,255,255,0.12);letter-spacing:0.06em;font-weight:300;}
+.fmade{font-family:'Cormorant Garamond',serif;font-size:0.85rem;font-style:italic;color:rgba(255,255,255,0.12);}
+.fmade span{color:var(--gold);opacity:0.6;}
+
+/* SCROLL ANIMS */
+[data-v]{opacity:0;will-change:transform,opacity;}
+[data-v="up"]{transform:translateY(60px);}
+[data-v="left"]{transform:translateX(-60px);}
+[data-v="right"]{transform:translateX(60px);}
+[data-v="fade"]{transform:none;}
+[data-v].vin{
+  opacity:1!important;transform:none!important;
+  transition:opacity 1s cubic-bezier(0.16,1,0.3,1),transform 1s cubic-bezier(0.16,1,0.3,1);
+}
+[data-vstagger]>*{opacity:0;transform:translateY(50px);}
+[data-vstagger]>*.vin{
+  opacity:1;transform:none;
+  transition:opacity 0.85s cubic-bezier(0.16,1,0.3,1),transform 0.85s cubic-bezier(0.16,1,0.3,1);
+}
+
+@keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{to{opacity:1;}}
+
+/* RESPONSIVE */
+@media(max-width:1100px){
+  nav{padding:20px 32px;}
+  nav.scrolled{padding:14px 32px;}
+  .hero-content{grid-template-columns:1fr;padding:0 40px;gap:40px;}
+  .hero-right{flex-direction:row;min-width:auto;}
+  .hstat-ph{flex:1;}
+  .about-wrap,.why-layout,.contact-grid{grid-template-columns:1fr;gap:50px;}
+  .sec-pad{padding:90px 40px;}
+  .prod-grid{grid-template-columns:1fr 1fr;}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:36px;}
+  footer{padding:48px 40px;}
+  .loc-grid{grid-template-columns:1fr;}
+  .side-text{display:none;}
+}
+@media(max-width:700px){
+  .n-links{display:none;}
+  .prod-grid{grid-template-columns:1fr;}
+  .why-right{grid-template-columns:1fr;}
+  .frow{grid-template-columns:1fr;}
+  .footer-grid{grid-template-columns:1fr;}
+  .prod-head{flex-direction:column;gap:16px;}
+  .prod-sub{text-align:left;}
+}
+</style>
+</head>
+<body>
+
+<div id="ec"></div>
+<div id="ec-d"></div>
+<canvas id="cc"></canvas>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="n-logo">
+    SI<em class="ri">D</em>AL
+    <span class="go">Est. 2006<br>Kirkuk · Iraq</span>
+  </a>
+  <ul class="n-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#products">Products</a></li>
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#locations">Locations</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="n-cta">Inquire Now</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="rings">
+    <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+    <div class="ring"></div><div class="ring"></div>
+  </div>
+  <div class="draw-line"></div>
+  <span class="side-text left">Sidal Industrial Company · Kirkuk Iraq · Est. 2006</span>
+  <span class="side-text right">Air · Water · Precision · Power</span>
+
+  <div class="hero-content">
+    <div class="hero-left">
+      <p class="hero-kicker">Iraq's Industrial Vanguard</p>
+      <h1 class="hero-title">
+        <span class="row"><span>SIDAL</span></span>
+        <span class="row"><span>Industrial</span></span>
+        <span class="row"><span>Excellence</span></span>
+      </h1>
+      <p class="hero-serif-sub">Leading provider of industrial water purification systems and official air compressor supplier throughout Iraq — forged on 18 years of precision engineering.</p>
+      <div class="hero-actions">
+        <a href="#products" class="btn-phantom"><span>Explore Divisions</span></a>
+        <a href="#about" class="btn-outline"><span>Our Legacy</span><span class="ll"></span></a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hstat-ph"><span class="hstat-n" data-count="18">0</span><span class="hstat-l">Years</span></div>
+      <div class="hstat-ph"><span class="hstat-n" data-count="6">0</span><span class="hstat-l">Divisions</span></div>
+      <div class="hstat-ph"><span class="hstat-n" data-count="2">0</span><span class="hstat-l">Offices</span></div>
+      <div class="hstat-ph"><span class="hstat-n">24/7</span><span class="hstat-l">Support</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="mq">
+  <div class="mq-track">
+    <span class="mq-item">Air Compressors <span class="mq-gem"></span></span>
+    <span class="mq-item">Water Purification <span class="mq-gem"></span></span>
+    <span class="mq-item">Industrial Printers <span class="mq-gem"></span></span>
+    <span class="mq-item">Nitrogen Generation <span class="mq-gem"></span></span>
+    <span class="mq-item">Reverse Osmosis <span class="mq-gem"></span></span>
+    <span class="mq-item">Laboratory Systems <span class="mq-gem"></span></span>
+    <span class="mq-item">24/7 Technical Support <span class="mq-gem"></span></span>
+    <span class="mq-item">Air Compressors <span class="mq-gem"></span></span>
+    <span class="mq-item">Water Purification <span class="mq-gem"></span></span>
+    <span class="mq-item">Industrial Printers <span class="mq-gem"></span></span>
+    <span class="mq-item">Nitrogen Generation <span class="mq-gem"></span></span>
+    <span class="mq-item">Reverse Osmosis <span class="mq-gem"></span></span>
+    <span class="mq-item">Laboratory Systems <span class="mq-gem"></span></span>
+    <span class="mq-item">24/7 Technical Support <span class="mq-gem"></span></span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about" class="sec-pad">
+  <div class="about-wrap">
+    <div class="about-left">
+      <div class="about-num-bg">18</div>
+      <p class="s-label" data-v="up">Our Heritage</p>
+      <h2 class="s-h" data-v="up" data-delay="0.08">Built on<br><em>Engineering</em><br><strong>Excellence</strong></h2>
+      <p class="about-p" data-v="up" data-delay="0.16" style="margin-top:28px;">Founded in 2006 in Kirkuk, Sidal Company has grown to become Iraq's most trusted name in industrial water purification and air compression solutions. Our journey began with experts forged in Turkish and European industrial laboratories.</p>
+      <p class="about-p" data-v="up" data-delay="0.22">Since establishment, we've been the backbone of Iraq's industrial sector — supplying factories, pharmaceutical plants, food manufacturers, automotive companies, and construction firms with the equipment they depend on.</p>
+    </div>
+    <div class="about-right" data-v="right" data-delay="0.1">
+      <div class="about-panel">
+        <div class="feat-ph">
+          <div class="fph-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="1"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>
+          <div><div class="fph-t">Official Agency Partner</div><div class="fph-p">Authorized dealer for Dalgakıran compressors and global brands, operating to international quality standards.</div></div>
+        </div>
+        <div class="feat-ph">
+          <div class="fph-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+          <div><div class="fph-t">Nationwide Coverage</div><div class="fph-p">Offices in Kirkuk and Erbil with comprehensive supply and support across all Iraq.</div></div>
+        </div>
+        <div class="feat-ph">
+          <div class="fph-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+          <div><div class="fph-t">Genuine Spare Parts</div><div class="fph-p">Extensive authentic parts inventory with fast delivery — zero downtime for your operations.</div></div>
+        </div>
+        <div class="feat-ph">
+          <div class="fph-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+          <div><div class="fph-t">Certified Training</div><div class="fph-p">Programs empowering your team to operate and maintain equipment with full expertise and confidence.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="band"></div>
+
+<!-- PRODUCTS -->
+<section id="products" class="sec-pad">
+  <div class="prod-head">
+    <div>
+      <p class="s-label" data-v="up">Our Divisions</p>
+      <h2 class="s-h" data-v="up" data-delay="0.08">Product<br><em>Lines</em></h2>
+    </div>
+    <p class="prod-sub" data-v="fade" data-delay="0.14"><em>Six industrial product lines engineered to global standards — powering Iraq's growth since 2006.</em></p>
+  </div>
+  <div class="prod-grid" data-vstagger>
+    <div class="pc"><div class="pc-glow"></div><span class="pc-num">I</span>
+      <div class="pc-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2"/><path d="M12.42 19.42A2 2 0 1 0 14 16H2"/><path d="M16.27 7.73A2.5 2.5 0 1 1 19.5 12H2"/></svg></div>
+      <p class="pc-cat">Division I</p><h3 class="pc-name">Air Compressors</h3>
+      <p class="pc-desc">Industrial-grade compressed air systems for factories across Iraq. Maximum efficiency, global standards.</p>
+      <div class="pc-tags"><span class="pc-tag">Rotary Screw</span><span class="pc-tag">Oil Free</span><span class="pc-tag">Reciprocating</span></div>
+      <div class="pc-line"></div>
+    </div>
+    <div class="pc"><div class="pc-glow"></div><span class="pc-num">II</span>
+      <div class="pc-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>
+      <p class="pc-cat">Division II</p><h3 class="pc-name">Water Treatment</h3>
+      <p class="pc-desc">Advanced purification systems for industrial, municipal, and laboratory environments worldwide.</p>
+      <div class="pc-tags"><span class="pc-tag">Reverse Osmosis</span><span class="pc-tag">UV Filtration</span><span class="pc-tag">Softening</span></div>
+      <div class="pc-line"></div>
+    </div>
+    <div class="pc"><div class="pc-glow"></div><span class="pc-num">III</span>
+      <div class="pc-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></div>
+      <p class="pc-cat">Division III</p><h3 class="pc-name">Industrial Printers</h3>
+      <p class="pc-desc">Precision marking and coding solutions for product identification across all manufacturing lines.</p>
+      <div class="pc-tags"><span class="pc-tag">CIJ</span><span class="pc-tag">DOD</span><span class="pc-tag">Laser Marking</span></div>
+      <div class="pc-line"></div>
+    </div>
+    <div class="pc"><div class="pc-glow"></div><span class="pc-num">IV</span>
+      <div class="pc-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6m-5 6 5 9H5l5-9V3m-3 6h8"/></svg></div>
+      <p class="pc-cat">Division IV</p><h3 class="pc-name">Gas Generation</h3>
+      <p class="pc-desc">On-site nitrogen and oxygen generation — continuous reliable supply for your critical processes.</p>
+      <div class="pc-tags"><span class="pc-tag">Nitrogen</span><span class="pc-tag">Oxygen</span><span class="pc-tag">DNG MOD</span></div>
+      <div class="pc-line"></div>
+    </div>
+    <div class="pc"><div class="pc-glow"></div><span class="pc-num">V</span>
+      <div class="pc-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20M6 6V4h12v2M12 12v4"/></svg></div>
+      <p class="pc-cat">Division V</p><h3 class="pc-name">Compressed Air Equip.</h3>
+      <p class="pc-desc">Complete peripheral solutions — receivers, cooling towers, and filtration maximizing plant efficiency.</p>
+      <div class="pc-tags"><span class="pc-tag">Air Receivers</span><span class="pc-tag">Cooling Towers</span></div>
+      <div class="pc-line"></div>
+    </div>
+    <div class="pc"><div class="pc-glow"></div><span class="pc-num">VI</span>
+      <div class="pc-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 3 2 2-7 7 2 2 1-1 5 5-1 1 2 2 7-7-2-2-1 1-5-5 1-1z"/><path d="M15 4l2 2"/></svg></div>
+      <p class="pc-cat">Division VI</p><h3 class="pc-name">Laboratory</h3>
+      <p class="pc-desc">Specialized lab-grade equipment for testing, quality control, and precision research environments.</p>
+      <div class="pc-tags"><span class="pc-tag">Lab Equipment</span><span class="pc-tag">Deionization</span></div>
+      <div class="pc-line"></div>
+    </div>
+  </div>
+</section>
+
+<div class="band"></div>
+
+<!-- WHY -->
+<section id="why" class="sec-pad">
+  <p class="s-label" data-v="up">Why Choose Us</p>
+  <div class="why-layout">
+    <div data-v="left" data-delay="0.06">
+      <div class="why-lh">The<br><em>Industrial</em><br>Standard<br>for Iraq</div>
+      <p class="why-lp">For over 18 years, Sidal has been the partner Iraqi industry trusts. We build long-term partnerships, deliver expert knowledge, and ensure your operations never stop with 24/7 support.</p>
+    </div>
+    <div class="why-right" data-vstagger>
+      <div class="wc"><div class="wc-gold-line"></div><div class="wc-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></div><div class="wc-t">Global Standards</div><p class="wc-p">Rigorous QC aligned with international standards across all product lines.</p></div>
+      <div class="wc"><div class="wc-gold-line"></div><div class="wc-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div><div class="wc-t">24/7 Support</div><p class="wc-p">Expert engineers on standby. When your machine stops, we start.</p></div>
+      <div class="wc"><div class="wc-gold-line"></div><div class="wc-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div><div class="wc-t">Fast Delivery</div><p class="wc-p">Genuine spare parts with rapid delivery across all of Iraq. Zero downtime.</p></div>
+      <div class="wc"><div class="wc-gold-line"></div><div class="wc-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><div class="wc-t">European Expertise</div><p class="wc-p">Knowledge forged in Turkey and European labs — brought to Iraq's industry.</p></div>
+      <div class="wc"><div class="wc-gold-line"></div><div class="wc-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="wc-t">Tailored Solutions</div><p class="wc-p">Bespoke solutions designed around your specific industrial requirements.</p></div>
+      <div class="wc"><div class="wc-gold-line"></div><div class="wc-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6M12 9v6"/></svg></div><div class="wc-t">Multi-Industry</div><p class="wc-p">Serving pharmaceutical, food, automotive, and construction sectors.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="band"></div>
+
+<!-- LOCATIONS -->
+<section id="locations" class="sec-pad">
+  <p class="s-label" data-v="up">Find Us</p>
+  <h2 class="s-h" data-v="up" data-delay="0.08">Our<br><em>Offices</em></h2>
+  <div class="loc-grid">
+    <div class="lc" data-v="up" data-delay="0.1">
+      <div class="lc-num">— 01</div>
+      <div class="lc-city">KIRKUK</div>
+      <div class="lc-region">Head Office · Northern Iraq</div>
+      <div class="lc-sep"></div>
+      <p class="lc-addr">Al-Quds Street<br>Kirkuk, Iraq</p>
+      <ul class="lc-phones"><li>+(964) 770-216-5522</li><li>+(964) 750-382-7788</li></ul>
+    </div>
+    <div class="lc" data-v="up" data-delay="0.18">
+      <div class="lc-num">— 02</div>
+      <div class="lc-city">ERBIL</div>
+      <div class="lc-region">Branch · Kurdistan Region</div>
+      <div class="lc-sep"></div>
+      <p class="lc-addr">Airport Road, near International Hospital<br>100 Street, Erbil, Iraq</p>
+      <ul class="lc-phones"><li>+(964) 771-852-2229</li><li>+(964) 751-852-2229</li></ul>
+    </div>
+  </div>
+</section>
+
+<div class="band"></div>
+
+<!-- CONTACT -->
+<section id="contact" class="sec-pad">
+  <div class="contact-grid">
+    <div data-v="left" data-delay="0.05">
+      <p class="s-label">Get In Touch</p>
+      <h2 class="ctitle">Let's<br>Power Your<br><em>Industry</em></h2>
+      <p class="csub">Whether you need a full industrial solution or a single spare part — our team is ready. We respond with urgency.</p>
+      <a href="mailto:sidal@sidal.co" class="cemail">
+        sidal@sidal.co<span class="ael"></span>
+      </a>
+    </div>
+    <div data-v="right" data-delay="0.1">
+      <form class="cform" onsubmit="handleSubmit(event)">
+        <div class="frow">
+          <div class="fg"><label>First Name</label><input type="text" placeholder="Ahmad"></div>
+          <div class="fg"><label>Last Name</label><input type="text" placeholder="Al-Rashid"></div>
+        </div>
+        <div class="fg"><label>Company</label><input type="text" placeholder="Your company name"></div>
+        <div class="fg"><label>Email</label><input type="email" placeholder="your@company.com"></div>
+        <div class="fg"><label>Division of Interest</label>
+          <select>
+            <option value="">Select...</option>
+            <option>Air Compressors</option><option>Water Treatment</option>
+            <option>Industrial Printers</option><option>Gas Generation</option>
+            <option>Compressed Air Equipment</option><option>Laboratory Systems</option>
+            <option>General Inquiry</option>
+          </select>
+        </div>
+        <div class="fg"><label>Message</label><textarea rows="4" placeholder="Describe your industrial requirements..."></textarea></div>
+        <button type="submit" class="fsub"><span>Submit Inquiry →</span></button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="flogo">SI<em>D</em>AL</div>
+      <p class="ftagline">Iraq's leading industrial solutions provider. Powering factories, purifying water, driving economic growth since 2006.</p>
+    </div>
+    <div>
+      <p class="fct">Divisions</p>
+      <ul class="flinks">
+        <li><a href="#products">Air Compressors</a></li><li><a href="#products">Water Treatment</a></li>
+        <li><a href="#products">Industrial Printers</a></li><li><a href="#products">Gas Generation</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="fct">Company</p>
+      <ul class="flinks">
+        <li><a href="#about">About Us</a></li><li><a href="#why">Why Sidal</a></li>
+        <li><a href="#locations">Locations</a></li><li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="fct">Contact</p>
+      <div class="fci"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><span>Al-Quds Street, Kirkuk, Iraq</span></div>
+      <div class="fci"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.95-.95a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>+(964) 770-216-5522</span></div>
+      <div class="fci"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>sidal@sidal.co</span></div>
+    </div>
+  </div>
+  <div class="fbtm">
+    <p class="fcopy">© 2025 Sidal Company, Kirkuk, Iraq. All rights reserved.</p>
+    <p class="fmade"><em>Powering <span>Iraq's</span> Industrial Future</em></p>
+  </div>
+</footer>
+
+<script>
+/* CURSOR */
+const ec=document.getElementById('ec'),ecd=document.getElementById('ec-d');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;ecd.style.left=mx+'px';ecd.style.top=my+'px';});
+(function raf(){rx+=(mx-rx)*0.08;ry+=(my-ry)*0.08;ec.style.left=rx+'px';ec.style.top=ry+'px';requestAnimationFrame(raf);})();
+document.querySelectorAll('a,button,.pc,.wc,.lc,.hstat-ph').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ec.style.width='64px';ec.style.height='64px';ec.style.borderColor='rgba(201,168,76,0.8)';});
+  el.addEventListener('mouseleave',()=>{ec.style.width='48px';ec.style.height='48px';ec.style.borderColor='rgba(201,168,76,0.5)';});
+});
+
+/* NAV */
+window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('scrolled',scrollY>60);});
+
+/* CONSTELLATION CANVAS */
+(function(){
+  const canvas=document.getElementById('cc');
+  const ctx=canvas.getContext('2d');
+  let W,H,stars=[];
+  const N=80,DIST=130;
+
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+
+  class Star{
+    constructor(){this.reset();}
+    reset(){
+      this.x=Math.random()*W;
+      this.y=Math.random()*H;
+      this.vx=(Math.random()-0.5)*0.25;
+      this.vy=(Math.random()-0.5)*0.25;
+      this.r=Math.random()*1.2+0.3;
+      this.twinkle=Math.random()*Math.PI*2;
+      this.twinkleSpeed=0.01+Math.random()*0.015;
+    }
+    update(){
+      this.x+=this.vx;this.y+=this.vy;
+      this.twinkle+=this.twinkleSpeed;
+      if(this.x<0||this.x>W)this.vx*=-1;
+      if(this.y<0||this.y>H)this.vy*=-1;
+    }
+    draw(){
+      const a=(Math.sin(this.twinkle)*0.4+0.6)*0.5;
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(201,168,76,${a})`;
+      ctx.fill();
+    }
+  }
+
+  function init(){stars=[];for(let i=0;i<N;i++)stars.push(new Star());}
+
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<stars.length;i++){
+      for(let j=i+1;j<stars.length;j++){
+        const dx=stars[i].x-stars[j].x,dy=stars[i].y-stars[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<DIST){
+          const a=(1-d/DIST)*0.06;
+          ctx.beginPath();
+          ctx.moveTo(stars[i].x,stars[i].y);
+          ctx.lineTo(stars[j].x,stars[j].y);
+          ctx.strokeStyle=`rgba(201,168,76,${a})`;
+          ctx.lineWidth=0.4;ctx.stroke();
+        }
+      }
+      stars[i].update();stars[i].draw();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize',()=>{resize();init();});
+  resize();init();frame();
+})();
+
+/* SCROLL ANIMATIONS */
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const el=e.target;
+      const delay=parseFloat(el.dataset.delay||0)*1000;
+      setTimeout(()=>el.classList.add('vin'),delay);
+      io.unobserve(el);
+    }
+  });
+},{threshold:0.1,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('[data-v]').forEach(el=>io.observe(el));
+
+const sio=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      [...e.target.children].forEach((c,i)=>setTimeout(()=>c.classList.add('vin'),i*100));
+      sio.unobserve(e.target);
+    }
+  });
+},{threshold:0.06});
+document.querySelectorAll('[data-vstagger]').forEach(el=>sio.observe(el));
+
+/* COUNTERS */
+document.querySelectorAll('[data-count]').forEach(el=>{
+  new IntersectionObserver(([e],obs)=>{
+    if(e.isIntersecting){
+      const t=parseInt(el.dataset.count);let v=0;
+      const step=Math.ceil(t/40);
+      const timer=setInterval(()=>{v=Math.min(v+step,t);el.textContent=v+(t>4?'+':'');if(v>=t)clearInterval(timer);},40);
+      obs.disconnect();
+    }
+  },{threshold:0.5}).observe(el);
+});
+
+/* PARALLAX */
+window.addEventListener('scroll',()=>{
+  const y=scrollY;
+  const hl=document.querySelector('.hero-left');
+  const rings=document.querySelector('.rings');
+  if(hl)hl.style.transform=`translateY(${y*0.2}px)`;
+  if(rings)rings.style.transform=`translateY(calc(-50% + ${y*0.1}px))`;
+},{passive:true});
+
+function handleSubmit(e){
+  e.preventDefault();
+  const btn=e.target.querySelector('.fsub');
+  btn.innerHTML='<span>✓ Inquiry Received</span>';btn.style.background='#8B6914';
+  setTimeout(()=>{btn.innerHTML='<span>Submit Inquiry →</span>';btn.style.background='';e.target.reset();},3000);
+}
+</script>
+</body>
+</html>
